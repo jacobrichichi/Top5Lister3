@@ -8,7 +8,10 @@ import { GlobalStoreContext } from '../store'
 */
 function Top5Item(props) {
     const { store } = useContext(GlobalStoreContext);
-    const [draggedTo, setDraggedTo] = useState(0);
+    const [ draggedTo, setDraggedTo ] = useState(0);
+    const [ editActive, setEditActive ] = useState(false);
+    const [ text, setText ] = useState("");
+    let { index } = props;
 
     function handleDragStart(event) {
         event.dataTransfer.setData("item", event.target.id);
@@ -41,13 +44,40 @@ function Top5Item(props) {
         store.addMoveItemTransaction(sourceId, targetId);
     }
 
-    let { index } = props;
+    function handleEdit(event){
+        event.stopPropagation();
+        toggleEdit();
+    }
+
+    function toggleEdit() {
+        let newActive = !editActive;
+        if (newActive) {
+            store.setIsItemEditActive();
+            setText(props.text);
+        }
+        setEditActive(newActive);
+    }
+
+    function handleKeyPress(event) {
+        if (event.code === "Enter") {
+            let id = event.target.id.substring(("item-".length));
+            id = parseInt(id) - 1;
+            store.addChangeItemTransaction(id, props.text, text);
+            toggleEdit();
+        }
+    }
+
+    function handleUpdateText(event) {
+        setText(event.target.value);
+    }
+    
     let itemClass = "top5-item";
     if (draggedTo) {
         itemClass = "top5-item-dragged-to";
     }
-    return (
-        <div
+
+    let item = 
+        (<div
             id={'item-' + (index + 1)}
             className={itemClass}
             onDragStart={handleDragStart}
@@ -59,12 +89,28 @@ function Top5Item(props) {
         >
             <input
                 type="button"
-                id={"edit-item-" + index + 1}
+                id={"edit-item-" + (index + 1)}
                 className="list-card-button"
                 value={"\u270E"}
+                onClick = {handleEdit}
             />
             {props.text}
-        </div>)
+        </div>);
+
+    if(editActive){
+        item = (
+            <input
+                id={"item-" + (index+1)}
+                className = {itemClass}
+                type='text'
+                onKeyPress={handleKeyPress}
+                onChange={handleUpdateText}
+                defaultValue={props.text}
+            />
+        )
+    }
+
+    return (item);
 }
 
 export default Top5Item;
