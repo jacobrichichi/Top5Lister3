@@ -11,19 +11,25 @@ import { GlobalStoreContext } from '../store'
 */
 function DeleteModal() {
     const { store } = useContext(GlobalStoreContext);
+
     let name = "";
-    if (store.currentList) {
-        name = store.currentList.name;
+    let classes = "modal";
+
+    if (store.pairMarkedForDeletion) {
+        name = store.pairMarkedForDeletion.name;
+        classes += " is-visible"
     }
     function handleDeleteList(event) {
         store.deleteMarkedList();
     }
     function handleCloseModal(event) {
-        store.hideDeleteListModal();
+        store.markListForDeletion(null);
     }
+
+
     return (
         <div
-            className="modal"
+            className={classes}
             id="delete-modal"
             data-animation="slideInOutLeft">
             <div className="modal-dialog">

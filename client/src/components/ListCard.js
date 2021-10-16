@@ -16,6 +16,7 @@ function ListCard(props) {
     const { idNamePair, selected } = props;
 
     function handleLoadList(event) {
+        event.stopPropagation();
         if (!event.target.disabled) {
             let _id = event.target.id;
             if (_id.indexOf('list-card-text-') >= 0)
@@ -33,9 +34,7 @@ function ListCard(props) {
 
     function toggleEdit() {
         let newActive = !editActive;
-        if (newActive) {
-            store.setIsListNameEditActive();
-        }
+        store.setIsListNameEditActive(newActive);
         setEditActive(newActive);
     }
 
@@ -51,12 +50,17 @@ function ListCard(props) {
         setText(event.target.value);
     }
 
+    function handleDeleteClick(event){
+        event.stopPropagation();
+        store.markListForDeletion(idNamePair);
+    }
+
     let selectClass = "unselected-list-card";
     if (selected) {
         selectClass = "selected-list-card";
     }
     let cardStatus = false;
-    if (store.isListNameEditActive) {
+    if (store.isListNameEditActive || store.listMarkedForDeletion != null) {
         cardStatus = true;
     }
 
@@ -77,6 +81,7 @@ function ListCard(props) {
                 type="button"
                 id={"delete-list-" + idNamePair._id}
                 className="list-card-button"
+                onClick = {handleDeleteClick}
                 value={"\u2715"}
             />
             <input
