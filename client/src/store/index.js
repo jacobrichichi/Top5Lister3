@@ -17,7 +17,8 @@ export const GlobalStoreActionType = {
     CLOSE_CURRENT_LIST: "CLOSE_CURRENT_LIST",
     LOAD_ID_NAME_PAIRS: "LOAD_ID_NAME_PAIRS",
     SET_CURRENT_LIST: "SET_CURRENT_LIST",
-    SET_LIST_NAME_EDIT_ACTIVE: "SET_LIST_NAME_EDIT_ACTIVE"
+    SET_LIST_NAME_EDIT_ACTIVE: "SET_LIST_NAME_EDIT_ACTIVE",
+    CREATE_NEW_LIST: "CREATE_NEW_LIST"
 }
 
 // WE'LL NEED THIS TO PROCESS TRANSACTIONS
@@ -31,8 +32,8 @@ export const useGlobalStore = () => {
         idNamePairs: [],
         currentList: null,
         newListCounter: 0,
-        listNameActive: false,
-        itemActive: false,
+        isListNameEditActive: false,
+        isItemEditActive: false,
         listMarkedForDeletion: null
     });
 
@@ -96,6 +97,18 @@ export const useGlobalStore = () => {
                     listMarkedForDeletion: null
                 });
             }
+
+            // START EDITING A LIST NAME
+            case GlobalStoreActionType.CREATE_NEW_LIST: {
+                return setStore({
+                    idNamePairs: payload.idNamePairs,
+                    currentList: payload.top5List,
+                    newListCounter: store.newListCounter + 1,
+                    isListNameEditActive: false,
+                    isItemEditActive: false,
+                    listMarkedForDeletion: null
+                });
+            }
             default:
                 return store;
         }
@@ -135,6 +148,35 @@ export const useGlobalStore = () => {
             }
         }
         asyncChangeListName(id);
+    }
+
+    // THIS FUNCTION PROCESSES CHANGING A LIST NAME
+    store.addNewList = function () {
+        // GET THE LIST
+        async function asyncAddNewList() {
+
+            let response = await api.createTop5List({
+                name: "untitled_list" + store.newListCounter,
+                items: ["?", "?", "?", "?", "?"]
+            });
+
+            if (response.data.success) {
+                let top5List = response.data.top5List;
+                async function asyncGetTop5ListPairs(top5List) {
+                    response = await api.getTop5ListPairs();
+                    if(response.data.success){
+                        let payload = {top5List: top5List, idNamePairs: response.data.idNamePairs}
+                        storeReducer({
+                            type: GlobalStoreActionType.CREATE_NEW_LIST,
+                            payload: payload
+                        });
+                        store.history.push("/top5list/" + top5List._id);
+                    }
+                }
+                asyncGetTop5ListPairs(top5List)        
+            }
+        }
+        asyncAddNewList();           
     }
 
     // THIS FUNCTION PROCESSES CLOSING THE CURRENTLY LOADED LIST
