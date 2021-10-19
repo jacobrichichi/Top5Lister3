@@ -8,7 +8,7 @@ const Top5List = require('../models/top5list-model')
 */
 createTop5List = (req, res) => {
     const body = req.body;
-    console.log("createTop5List body: " + body);
+    //console.log("createTop5List body: " + body);
 
     if (!body) {
         return res.status(400).json({
@@ -18,7 +18,7 @@ createTop5List = (req, res) => {
     }
 
     const top5List = new Top5List(body);
-    console.log("top5List: " + JSON.stringify(body));
+    //console.log("top5List: " + JSON.stringify(body));
     if (!top5List) {
         return res.status(400).json({ success: false, error: err })
     }
@@ -85,8 +85,8 @@ deleteTop5List = async (req, res) => {
 
         if (!top5List) {
             return res
-                .status(404)
-                .json({ success: false, error: `Top 5 List not found` })
+                .status(200)    
+                .json({ success: true, data: [] })
         }
 
         return res.status(200).json({ success: true, data: top5List })

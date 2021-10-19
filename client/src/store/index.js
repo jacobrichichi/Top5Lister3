@@ -32,11 +32,17 @@ const tps = new jsTPS();
 // WITH THIS WE'RE MAKING OUR GLOBAL DATA STORE
 // AVAILABLE TO THE REST OF THE APPLICATION
 export const useGlobalStore = () => {
+    let persistentNewListCounter = 0;
+
+    if(localStorage.getItem('newListCounter')){
+        persistentNewListCounter = parseInt(localStorage.getItem('newListCounter'))
+    }
+
     // THESE ARE ALL THE THINGS OUR DATA STORE WILL MANAGE
     const [store, setStore] = useState({
         idNamePairs: [],
         currentList: null,
-        newListCounter: 0,
+        newListCounter: persistentNewListCounter,
         isListNameEditActive: false,
         isItemEditActive: false,
         pairMarkedForDeletion: null
@@ -223,7 +229,7 @@ export const useGlobalStore = () => {
         async function asyncAddNewList() {
 
             let response = await api.createTop5List({
-                name: "untitled_list" + store.newListCounter,
+                name: "Untitled" + store.newListCounter,
                 items: ["?", "?", "?", "?", "?"]
             });
 
@@ -232,6 +238,7 @@ export const useGlobalStore = () => {
                 async function asyncGetTop5ListPairs(top5List) {
                     response = await api.getTop5ListPairs();
                     if(response.data.success){
+                        localStorage.setItem('newListCounter', store.newListCounter + 1)
                         let payload = {top5List: top5List, idNamePairs: response.data.idNamePairs}
                         storeReducer({
                             type: GlobalStoreActionType.CREATE_NEW_LIST,
@@ -252,6 +259,8 @@ export const useGlobalStore = () => {
             type: GlobalStoreActionType.CLOSE_CURRENT_LIST,
             payload: {}
         });
+        tps.clearAllTransactions();
+
     }
 
     // THIS FUNCTION LOADS ALL THE ID, NAME PAIRS SO WE CAN LIST ALL THE LISTS
@@ -304,12 +313,12 @@ export const useGlobalStore = () => {
 
     store.deleteMarkedList = function(){
         async function asyncDeleteList(){
-            console.log(store.pairMarkedForDeletion._id);
+            console.log('The ID is: ' + store.pairMarkedForDeletion._id);
             let response = await api.deleteTop5ListById(store.pairMarkedForDeletion._id);
             if(response.data.success){
                 let idNamePairs = store.idNamePairs;
                 for(let i = 0; i<idNamePairs.length; i++){
-                    console.log(idNamePairs[i])
+                    //console.log(idNamePairs[i])
                     if(idNamePairs[i]._id === store.pairMarkedForDeletion._id){
                         idNamePairs.splice(i, 1)
                         break;
@@ -383,6 +392,14 @@ export const useGlobalStore = () => {
     }
     store.redo = function () {
         tps.doTransaction();
+    }
+
+    store.hasTransactionToUndo = function () {
+        return tps.hasTransactionToUndo();
+    }
+
+    store.hasTransactionToRedo = function () {
+        return tps.hasTransactionToRedo();
     }
 
     // THIS FUNCTION ENABLES THE PROCESS OF EDITING A LIST NAME

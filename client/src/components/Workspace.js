@@ -27,21 +27,27 @@ function Workspace() {
                     ))
                 }
             </div>;
-    }
-    return (
-        <div id="top5-workspace">
-            <div id="workspace-edit">
-                <div id="edit-numbering">
-                    <div className="item-number">1.</div>
-                    <div className="item-number">2.</div>
-                    <div className="item-number">3.</div>
-                    <div className="item-number">4.</div>
-                    <div className="item-number">5.</div>
+
+        return (
+            <div id="top5-workspace">
+                <div id="workspace-edit">
+                    <div id="edit-numbering">
+                        <div className="item-number">1.</div>
+                        <div className="item-number">2.</div>
+                        <div className="item-number">3.</div>
+                        <div className="item-number">4.</div>
+                        <div className="item-number">5.</div>
+                    </div>
+                    {editItems}
                 </div>
-                {editItems}
             </div>
-        </div>
-    )
+        )
+    }
+    else{
+        console.log('nvm')
+        store.history.push('/')
+        return null;
+    }
 }
 
 export default Workspace;
